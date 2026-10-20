@@ -7,6 +7,7 @@ from app.api.routes import router as api_router
 from app.config import settings
 from app.database import engine
 from app.mcp_server import mcp
+from mcp.server.transport_security import TransportSecuritySettings
 
 
 @asynccontextmanager
@@ -28,6 +29,7 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Mcp-Session-Id"],
 )
 
 
@@ -42,18 +44,37 @@ async def unhandled_exception(request: Request, exc: Exception):
 
 app.include_router(api_router)
 
-# MCP Streamable HTTP — allow the public hostname (set MCP_PUBLIC_URL on Render)
-from mcp.server.transport_security import TransportSecuritySettings
+public_host = (
+    settings.mcp_public_url.replace("https://", "").replace("http://", "").split("/")[0]
+    if settings.mcp_public_url
+    else ""
+)
+allowed_hosts = ["localhost", "localhost:*", "127.0.0.1", "127.0.0.1:*"]
+if public_host and public_host not in allowed_hosts:
+    allowed_hosts.extend([public_host, f"{public_host}:*"])
 
-public_host = settings.mcp_public_url.replace("https://", "").replace("http://", "").split("/")[0]
+allowed_origins = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+if public_host:
+    allowed_origins.append(f"https://{public_host}")
+
 security = TransportSecuritySettings(
-    allowed_hosts=[public_host, f"{public_host}:*"] if public_host else ["localhost", "127.0.0.1"],
+    allowed_hosts=allowed_hosts,
+    allowed_origins=allowed_origins,
 )
 
-app.mount("/mcp", mcp.streamable_http_app(
-    streamable_http_path="/",
-    transport_security=security,
-))
+app.mount(
+    "/mcp",
+    mcp.streamable_http_app(
+        stateless_http=True,
+        streamable_http_path="/",
+        transport_security=security,
+    ),
+)
 
 
 @app.get("/health")
