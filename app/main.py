@@ -47,20 +47,21 @@ app.include_router(api_router)
 public_host = (
     settings.mcp_public_url.replace("https://", "").replace("http://", "").split("/")[0]
     if settings.mcp_public_url
-    else ""
+    else "business-mcp-server.onrender.com"
 )
-allowed_hosts = ["localhost", "localhost:*", "127.0.0.1", "127.0.0.1:*"]
-if public_host and public_host not in allowed_hosts:
-    allowed_hosts.extend([public_host, f"{public_host}:*"])
-
+allowed_hosts = [
+    "localhost", "localhost:*",
+    "127.0.0.1", "127.0.0.1:*",
+    public_host, f"{public_host}:*",
+]
 allowed_origins = [
     "http://localhost:5500",
     "http://127.0.0.1:5500",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "https://khaledlajili.github.io",
+    f"https://{public_host}",
 ]
-if public_host:
-    allowed_origins.append(f"https://{public_host}")
 
 security = TransportSecuritySettings(
     allowed_hosts=allowed_hosts,
