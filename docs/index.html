@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Northstar Trading — MCP Demo</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a2332;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #e7ecf3;
+      --muted: #8b9bb4;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      padding: 2rem 1.5rem 1rem;
+      text-align: center;
+      border-bottom: 1px solid #2a3548;
+    }
+    header h1 { margin: 0 0 0.4rem; font-size: 1.8rem; }
+    header p { margin: 0; color: var(--muted); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.2rem;
+      border: 1px solid #2a3548;
+    }
+    .card h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+    .card p { margin: 0 0 0.8rem; color: var(--muted); font-size: 0.9rem; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+    input, textarea, select {
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      margin-top: 0.2rem;
+      border-radius: 6px;
+      border: 1px solid #3a4a63;
+      background: #0f1419;
+      color: var(--text);
+    }
+    button {
+      margin-top: 0.8rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.55rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button:hover { background: var(--accent-hover); }
+    button.secondary { background: #334155; }
+    #results {
+      margin-top: 1.5rem;
+      background: #0a0e14;
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1px solid #2a3548;
+      min-height: 120px;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+    }
+    .badge { display: inline-block; font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; background: #1e3a5f; color: #93c5fd; margin-left: 0.4rem; }
+    .badge.write { background: #3f2a1a; color: #fbbf24; }
+    footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 2rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Northstar Trading</h1>
+    <p>MCP + REST demo · synthetic data · six tools</p>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <!-- search_customers -->
+      <div class="card">
+        <h3>search_customers <span class="badge">read</span></h3>
+        <p>Search customers by name or email.</p>
+        <label>Query <input id="q" value="Customer" /></label>
+        <label>Limit <input id="limit" type="number" value="5" /></label>
+        <button onclick="searchCustomers()">Run</button>
+      </div>
+
+      <!-- get_order -->
+      <div class="card">
+        <h3>get_order <span class="badge">read</span></h3>
+        <p>Fetch an order and its line items.</p>
+        <label>Order ID <input id="oid" type="number" value="1" /></label>
+        <button onclick="getOrder()">Run</button>
+      </div>
+
+      <!-- check_inventory -->
+      <div class="card">
+        <h3>check_inventory <span class="badge">read</span></h3>
+        <p>Product details and stock quantity.</p>
+        <label>SKU <input id="sku" value="SKU-001" /></label>
+        <button onclick="checkInventory()">Run</button>
+      </div>
+
+      <!-- get_sales_summary -->
+      <div class="card">
+        <h3>get_sales_summary <span class="badge">read</span></h3>
+        <p>Totals and breakdowns for a date range.</p>
+        <label>Start <input id="start" type="date" value="2026-01-01" /></label>
+        <label>End <input id="end" type="date" value="2026-01-31" /></label>
+        <button onclick="salesSummary()">Run</button>
+      </div>
+
+      <!-- create_quote -->
+      <div class="card">
+        <h3>create_quote <span class="badge write">write</span></h3>
+        <p>Create a draft quote (does not reserve stock).</p>
+        <label>Customer ID <input id="cid" type="number" value="1" /></label>
+        <label>SKU <input id="qsku" value="SKU-001" /></label>
+        <label>Quantity <input id="qty" type="number" value="2" /></label>
+        <label>Request ID <input id="rid" value="demo-quote-1" /></label>
+        <button onclick="createQuote()">Create draft</button>
+      </div>
+
+      <!-- create_support_ticket -->
+      <div class="card">
+        <h3>create_support_ticket <span class="badge write">write</span></h3>
+        <p>Open a support ticket.</p>
+        <label>Customer ID <input id="tcid" type="number" value="1" /></label>
+        <label>Subject <input id="subj" value="Demo ticket" /></label>
+        <label>Description <textarea id="desc" rows="2">Created from the demo page.</textarea></label>
+        <label>Request ID <input id="trid" value="demo-ticket-1" /></label>
+        <button onclick="createTicket()">Create ticket</button>
+      </div>
+    </div>
+
+    <div id="results">Results will appear here…</div>
+  </div>
+
+  <footer>
+    Portfolio demo · Northstar Trading · synthetic data only
+  </footer>
+
+  <script>
+    // Baked-in demo key and base URL.
+    // Change BASE after you deploy to Render.
+    const BASE = "http://localhost:8000";
+    const KEY = "demo-key-change-me";
+
+    const headers = {
+      "Content-Type": "application/json",
+      "X-Internal-API-Key": KEY
+    };
+
+    const out = document.getElementById("results");
+
+    async function call(path, options = {}) {
+      out.textContent = "Calling…";
+      try {
+        const res = await fetch(BASE + path, { headers, ...options });
+        const text = await res.text();
+        let body;
+        try { body = JSON.parse(text); } catch { body = text; }
+        out.textContent = JSON.stringify({ status: res.status, body }, null, 2);
+      } catch (e) {
+        out.textContent = "Error: " + e.message;
+      }
+    }
+
+    function searchCustomers() {
+      const q = document.getElementById("q").value;
+      const limit = document.getElementById("limit").value;
+      call(`/api/v1/customers?query=${encodeURIComponent(q)}&limit=${limit}`);
+    }
+    function getOrder() {
+      const id = document.getElementById("oid").value;
+      call(`/api/v1/orders/${id}`);
+    }
+    function checkInventory() {
+      const sku = document.getElementById("sku").value;
+      call(`/api/v1/inventory/${encodeURIComponent(sku)}`);
+    }
+    function salesSummary() {
+      const s = document.getElementById("start").value;
+      const e = document.getElementById("end").value;
+      call(`/api/v1/sales/summary?start_date=${s}&end_date=${e}`);
+    }
+    function createQuote() {
+      const body = {
+        customer_id: Number(document.getElementById("cid").value),
+        items: [{
+          sku: document.getElementById("qsku").value,
+          quantity: Number(document.getElementById("qty").value)
+        }],
+        request_id: document.getElementById("rid").value
+      };
+      call("/api/v1/quotes", { method: "POST", body: JSON.stringify(body) });
+    }
+    function createTicket() {
+      const body = {
+        customer_id: Number(document.getElementById("tcid").value),
+        subject: document.getElementById("subj").value,
+        description: document.getElementById("desc").value,
+        request_id: document.getElementById("trid").value
+      };
+      call("/api/v1/support-tickets", { method: "POST", body: JSON.stringify(body) });
+    }
+  </script>
+</body>
+</html>
